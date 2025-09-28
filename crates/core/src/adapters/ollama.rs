@@ -1,7 +1,7 @@
 use crate::backend::{Artifacts, Backend, BackendError};
 use reqwest::blocking::Client;
 use serde_json::{json, Value};
-use super::trait_adapter::{LLMAdapter, LLMRequest, LLMResponse};
+use super::trait_adapter::{LLMAdapter, LLMRequest, parse_artifacts_from_text};
 use async_trait::async_trait;
 use reqwest::Client as AsyncClient;
 
@@ -37,7 +37,7 @@ impl Backend for OllamaAdapter {
 
 #[async_trait]
 impl LLMAdapter for OllamaAdapter {
-    async fn call(&self, req: LLMRequest) -> Result<LLMResponse, String> {
+    async fn call(&self, req: LLMRequest) -> Result<Vec<crate::artifact::ArtifactMetadata>, String> {
         // Basic async implementation: POST to {url}/generate with prompt and options.
         // This is intentionally minimal: callers should extend parsing per their API.
         let client = AsyncClient::builder()
@@ -66,12 +66,13 @@ impl LLMAdapter for OllamaAdapter {
             .await
             .map_err(|e| format!("invalid json: {}", e))?;
 
-        // If the response has a `text` field, prefer it; otherwise stringify.
-        if let Some(t) = v.get("text").and_then(|v| v.as_str()) {
-            return Ok(LLMResponse { text: t.to_string() });
-        }
-
-        Ok(LLMResponse { text: v.to_string() })
+        // If the response has a `text` field, prefer it; otherwise stringify. Then parse into artifacts.
+        let text = if let Some(t) = v.get("text").and_then(|v| v.as_str()) {
+            t.to_string()
+        } else {
+            v.to_string()
+        };
+        Ok(parse_artifacts_from_text(&text))
     }
 
     fn name(&self) -> &'static str {

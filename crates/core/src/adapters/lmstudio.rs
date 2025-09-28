@@ -1,7 +1,7 @@
 use crate::backend::{Artifacts, Backend, BackendError};
 use reqwest::blocking::Client;
 use serde_json::{json, Value};
-use super::trait_adapter::{LLMAdapter, LLMRequest, LLMResponse};
+use super::trait_adapter::{LLMAdapter, LLMRequest, parse_artifacts_from_text};
 use async_trait::async_trait;
 use reqwest::Client as AsyncClient;
 
@@ -38,7 +38,7 @@ impl Backend for LMStudioAdapter {
 
 #[async_trait]
 impl LLMAdapter for LMStudioAdapter {
-    async fn call(&self, req: LLMRequest) -> Result<LLMResponse, String> {
+    async fn call(&self, req: LLMRequest) -> Result<Vec<crate::artifact::ArtifactMetadata>, String> {
         let client = AsyncClient::builder()
             .build()
             .map_err(|e| format!("client build error: {}", e))?;
@@ -65,10 +65,12 @@ impl LLMAdapter for LMStudioAdapter {
             .await
             .map_err(|e| format!("invalid json: {}", e))?;
 
-        if let Some(t) = v.get("text").and_then(|v| v.as_str()) {
-            return Ok(LLMResponse { text: t.to_string() });
-        }
-        Ok(LLMResponse { text: v.to_string() })
+        let text = if let Some(t) = v.get("text").and_then(|v| v.as_str()) {
+            t.to_string()
+        } else {
+            v.to_string()
+        };
+        Ok(parse_artifacts_from_text(&text))
     }
 
     fn name(&self) -> &'static str {

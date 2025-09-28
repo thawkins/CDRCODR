@@ -26,7 +26,7 @@ pub struct MockAdapter {
 
 // Lightweight adapter implementing the LLMAdapter trait by delegating to a
 // simple deterministic reply (used by higher-level async flows/tests).
-use super::trait_adapter::{LLMAdapter, LLMRequest, LLMResponse};
+use super::trait_adapter::{parse_artifacts_from_text, LLMAdapter, LLMRequest};
 use async_trait::async_trait;
 
 pub struct LLMMockAdapter {
@@ -35,14 +35,20 @@ pub struct LLMMockAdapter {
 
 impl LLMMockAdapter {
     pub fn new(prefix: impl Into<String>) -> Self {
-        Self { reply_prefix: prefix.into() }
+        Self {
+            reply_prefix: prefix.into(),
+        }
     }
 }
 
 #[async_trait]
 impl LLMAdapter for LLMMockAdapter {
-    async fn call(&self, req: LLMRequest) -> Result<LLMResponse, String> {
-        Ok(LLMResponse { text: format!("{}{}", self.reply_prefix, req.prompt) })
+    async fn call(
+        &self,
+        req: LLMRequest,
+    ) -> Result<Vec<crate::artifact::ArtifactMetadata>, String> {
+        let text = format!("{}{}", self.reply_prefix, req.prompt);
+        Ok(parse_artifacts_from_text(&text))
     }
 
     fn name(&self) -> &'static str {

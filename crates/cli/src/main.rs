@@ -144,7 +144,10 @@ fn main() {
                         let rt = tokio::runtime::Runtime::new().unwrap();
                         let resp = rt.block_on(async { a.call(cprcodr_core::adapters::trait_adapter::LLMRequest { prompt: prompt.clone(), max_tokens: None }).await });
                         match resp {
-                            Ok(r) => Ok(cprcodr_core::backend::Artifacts { artifacts: vec![serde_json::json!({"path": "generated/llm.txt", "summary": "llm response", "content": r.text})] }),
+                            Ok(arts) => {
+                                let vals: Vec<serde_json::Value> = arts.into_iter().map(|m| serde_json::json!({"path": m.path, "summary": m.summary, "content": m.content.unwrap_or(m.summary)})).collect();
+                                Ok(cprcodr_core::backend::Artifacts { artifacts: vals })
+                            }
                             Err(e) => Err(cprcodr_core::backend::BackendError::Protocol(e)),
                         }
                     }
@@ -154,7 +157,10 @@ fn main() {
                         let rt = tokio::runtime::Runtime::new().unwrap();
                         let resp = rt.block_on(async { a.call(cprcodr_core::adapters::trait_adapter::LLMRequest { prompt: prompt.clone(), max_tokens: None }).await });
                         match resp {
-                            Ok(r) => Ok(cprcodr_core::backend::Artifacts { artifacts: vec![serde_json::json!({"path": "generated/ollama.txt", "summary": "ollama response", "content": r.text})] }),
+                            Ok(arts) => {
+                                let vals: Vec<serde_json::Value> = arts.into_iter().map(|m| serde_json::json!({"path": m.path, "summary": m.summary, "content": m.content.unwrap_or(m.summary)})).collect();
+                                Ok(cprcodr_core::backend::Artifacts { artifacts: vals })
+                            }
                             Err(e) => Err(cprcodr_core::backend::BackendError::Protocol(e)),
                         }
                     }
@@ -164,7 +170,10 @@ fn main() {
                         let rt = tokio::runtime::Runtime::new().unwrap();
                         let resp = rt.block_on(async { a.call(cprcodr_core::adapters::trait_adapter::LLMRequest { prompt: prompt.clone(), max_tokens: None }).await });
                         match resp {
-                            Ok(r) => Ok(cprcodr_core::backend::Artifacts { artifacts: vec![serde_json::json!({"path": "generated/lmstudio.txt", "summary": "lmstudio response", "content": r.text})] }),
+                            Ok(arts) => {
+                                let vals: Vec<serde_json::Value> = arts.into_iter().map(|m| serde_json::json!({"path": m.path, "summary": m.summary, "content": m.content.unwrap_or(m.summary)})).collect();
+                                Ok(cprcodr_core::backend::Artifacts { artifacts: vals })
+                            }
                             Err(e) => Err(cprcodr_core::backend::BackendError::Protocol(e)),
                         }
                     }

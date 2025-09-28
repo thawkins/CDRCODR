@@ -6,6 +6,8 @@ pub struct ArtifactMetadata {
     pub path: String,
     pub summary: String,
     pub checksum: Option<String>,
+    // Optional full content of the artifact when available from the adapter
+    pub content: Option<String>,
 }
 
 impl fmt::Display for ArtifactMetadata {
