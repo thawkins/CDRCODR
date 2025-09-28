@@ -14,5 +14,6 @@
 fn placeholder_integration_adapter_server_removed() {
     // placeholder to keep test discovery stable; real integration tests live
     // elsewhere if added.
-    assert!(true);
+    // Intentionally empty; presence of this test keeps the file as a valid
+    // test module without performing any runtime work.
 }

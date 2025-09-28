@@ -134,8 +134,10 @@ pub fn apply_patch_to_working_tree(
             // extract current content of the target range
             let mut current = String::new();
             if !lines.is_empty() {
-                for ix in start_idx..=end_idx.min(lines.len().saturating_sub(1)) {
-                    current.push_str(&lines[ix]);
+                // iterate the slice of lines for the target range and accumulate
+                let take_end = end_idx.min(lines.len().saturating_sub(1));
+                for line in lines.iter().take(take_end + 1).skip(start_idx) {
+                    current.push_str(line);
                 }
             }
             // Compare after trimming to be tolerant to trailing newline differences
