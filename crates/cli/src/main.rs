@@ -1,6 +1,56 @@
 use clap::{Parser, Subcommand};
 use serde_json::json;
 
+use base64::Engine;
+
+// Helpers for detecting and decoding base64 payloads robustly.
+// Supports raw base64 or data URLs like: data:application/octet-stream;base64,AAAA
+fn strip_data_url(s: &str) -> (&str, bool) {
+    if let Some(idx) = s.find(',') {
+        if s[..idx].starts_with("data:") && s[..idx].contains(";base64") {
+            return (&s[idx + 1..], true);
+        }
+    }
+    (s, false)
+}
+
+fn looks_like_base64(s: &str) -> bool {
+    let t = s.trim();
+    if t.len() < 4 {
+        return false;
+    }
+    let clean: String = t.chars().filter(|c| !c.is_whitespace()).collect();
+    if clean.len() % 4 != 0 {
+        return false;
+    }
+    clean
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '+' || c == '/' || c == '=')
+}
+
+fn try_decode_base64_and_verify(s: &str) -> Option<Vec<u8>> {
+    let (payload, had_data_url) = strip_data_url(s);
+    let clean: String = payload.chars().filter(|c| !c.is_whitespace()).collect();
+    if !had_data_url && !looks_like_base64(&clean) {
+        return None;
+    }
+    match base64::engine::general_purpose::STANDARD.decode(&clean) {
+        Ok(bytes) => {
+            // If it wasn't a data-url, verify re-encoding matches (heuristic)
+            if had_data_url {
+                Some(bytes)
+            } else {
+                let re = base64::engine::general_purpose::STANDARD.encode(&bytes);
+                if re == clean {
+                    Some(bytes)
+                } else {
+                    None
+                }
+            }
+        }
+        Err(_) => None,
+    }
+}
 use cprcodr_core::adapters::MockAdapter;
 use cprcodr_core::adapters::{LLMAdapter, LMStudioAdapter, OllamaAdapter};
 use cprcodr_core::session::Session;
@@ -53,7 +103,6 @@ enum Commands {
         #[arg(long)]
         dry_run: bool,
     },
-    /// Reset mock adapter state (remove mock_state.json in the output dir)
     MockReset,
     /// Preview artifacts saved in a session
     Preview {
@@ -362,17 +411,46 @@ fn main() {
                         }],
                         metadata: None,
                     };
-                    let report =
-                        cprcodr_core::patch::apply_patch_to_working_tree(&patch, &cwd, false)
-                            .unwrap_or_else(|e| cprcodr_core::patch::PatchReport {
-                                conflicts: vec![e],
-                            });
-                    if !report.conflicts.is_empty() {
-                        any_conflict = true;
-                        eprintln!("conflicts applying {}: {:?}", path, report.conflicts);
+                    let media_type = item
+                        .get("media_type")
+                        .and_then(|s| s.as_str())
+                        .unwrap_or("");
+                    let is_text = media_type.is_empty() || media_type.starts_with("text/");
+                    if is_text {
+                        let report =
+                            cprcodr_core::patch::apply_patch_to_working_tree(&patch, &cwd, false)
+                                .unwrap_or_else(|e| cprcodr_core::patch::PatchReport {
+                                    conflicts: vec![e],
+                                });
+                        if !report.conflicts.is_empty() {
+                            any_conflict = true;
+                            eprintln!("conflicts applying {}: {:?}", path, report.conflicts);
+                        } else {
+                            // Backwards-compatible message used by existing tests
+                            println!("Wrote artifact stub: {}", path);
+                        }
                     } else {
-                        // Backwards-compatible message used by existing tests
-                        println!("Wrote artifact stub: {}", path);
+                        // For non-text artifacts, attempt to write the raw bytes.
+                        // Prefer base64-encoded content when provided; otherwise write raw bytes of the string.
+                        let write_res = (|| -> Result<(), String> {
+                            let bytes = if let Some(b) = try_decode_base64_and_verify(&content) {
+                                b
+                            } else {
+                                content.as_bytes().to_vec()
+                            };
+                            let target_path = cwd.join(path);
+                            if let Some(parent) = target_path.parent() {
+                                std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+                            }
+                            std::fs::write(&target_path, &bytes).map_err(|e| e.to_string())
+                        })();
+                        match write_res {
+                            Ok(()) => println!("Wrote binary artifact: {}", path),
+                            Err(e) => {
+                                any_conflict = true;
+                                eprintln!("conflicts applying {}: [\"{}\"]", path, e);
+                            }
+                        }
                     }
                 }
                 if any_conflict {
