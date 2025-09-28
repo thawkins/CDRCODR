@@ -285,7 +285,18 @@ fn main() {
                 let mut reports = Vec::new();
                 for item in arr {
                     let path = item.get("path").and_then(|s| s.as_str()).unwrap_or("");
-                    let content = item.get("content").and_then(|s| s.as_str()).unwrap_or("");
+                    // Prefer content when present, otherwise fall back to summary
+                    let content = item
+                        .get("content")
+                        .and_then(|s| s.as_str())
+                        .filter(|s| !s.is_empty())
+                        .map(|s| s.to_string())
+                        .or_else(|| {
+                            item.get("summary")
+                                .and_then(|s| s.as_str())
+                                .map(|s| s.to_string())
+                        })
+                        .unwrap_or_default();
                     // Build a simple Patch for single-file replacement of entire file
                     let patch = cprcodr_core::patch::Patch {
                         path: path.to_string(),
@@ -329,7 +340,18 @@ fn main() {
                 let mut any_conflict = false;
                 for item in arr {
                     let path = item.get("path").and_then(|s| s.as_str()).unwrap_or("");
-                    let content = item.get("content").and_then(|s| s.as_str()).unwrap_or("");
+                    // Prefer content when present, otherwise fall back to summary
+                    let content = item
+                        .get("content")
+                        .and_then(|s| s.as_str())
+                        .filter(|s| !s.is_empty())
+                        .map(|s| s.to_string())
+                        .or_else(|| {
+                            item.get("summary")
+                                .and_then(|s| s.as_str())
+                                .map(|s| s.to_string())
+                        })
+                        .unwrap_or_default();
                     let patch = cprcodr_core::patch::Patch {
                         path: path.to_string(),
                         hunks: vec![cprcodr_core::patch::Hunk {
