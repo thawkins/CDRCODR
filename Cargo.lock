@@ -248,6 +248,7 @@ name = "cprcodr"
 version = "0.1.0"
 dependencies = [
  "assert_cmd",
+ "base64",
  "clap",
  "cprcodr-core",
  "predicates 2.1.5",

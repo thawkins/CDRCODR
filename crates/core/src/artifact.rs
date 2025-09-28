@@ -8,6 +8,8 @@ pub struct ArtifactMetadata {
     pub checksum: Option<String>,
     // Optional full content of the artifact when available from the adapter
     pub content: Option<String>,
+    // Optional media type/MIME for the artifact (e.g. text/plain, application/octet-stream)
+    pub media_type: Option<String>,
 }
 
 impl fmt::Display for ArtifactMetadata {

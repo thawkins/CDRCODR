@@ -39,6 +39,10 @@ pub fn parse_artifacts_from_text(text: &str) -> Vec<ArtifactMetadata> {
                         .get("content")
                         .and_then(|v| v.as_str())
                         .map(|s| s.to_string());
+                    let media_type = obj
+                        .get("media_type")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string());
                     let summary = content_opt.as_deref().map(summarize).unwrap_or_else(|| {
                         obj.get("summary")
                             .and_then(|v| v.as_str())
@@ -51,6 +55,7 @@ pub fn parse_artifacts_from_text(text: &str) -> Vec<ArtifactMetadata> {
                             summary: summarize(&c),
                             checksum: None,
                             content: Some(c),
+                            media_type: media_type.clone(),
                         });
                         continue;
                     }
@@ -60,6 +65,7 @@ pub fn parse_artifacts_from_text(text: &str) -> Vec<ArtifactMetadata> {
                             summary,
                             checksum: None,
                             content: None,
+                            media_type: media_type.clone(),
                         });
                         continue;
                     }
@@ -70,6 +76,7 @@ pub fn parse_artifacts_from_text(text: &str) -> Vec<ArtifactMetadata> {
                     summary: it.to_string().chars().take(120).collect(),
                     checksum: None,
                     content: Some(it.to_string()),
+                    media_type: None,
                 });
             }
             if !out.is_empty() {
@@ -83,11 +90,16 @@ pub fn parse_artifacts_from_text(text: &str) -> Vec<ArtifactMetadata> {
                         .and_then(|v| v.as_str())
                         .map(|s| s.to_string())
                         .unwrap_or_else(|| "generated/artifact-1.txt".to_string());
+                    let media_type = obj
+                        .get("media_type")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string());
                     return vec![ArtifactMetadata {
                         path,
                         summary: summarize(content),
                         checksum: None,
                         content: Some(content.to_string()),
+                        media_type,
                     }];
                 }
                 if let Some(summary) = obj.get("summary").and_then(|v| v.as_str()) {
@@ -96,11 +108,16 @@ pub fn parse_artifacts_from_text(text: &str) -> Vec<ArtifactMetadata> {
                         .and_then(|v| v.as_str())
                         .map(|s| s.to_string())
                         .unwrap_or_else(|| "generated/artifact-1.txt".to_string());
+                    let media_type = obj
+                        .get("media_type")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string());
                     return vec![ArtifactMetadata {
                         path,
                         summary: summary.to_string(),
                         checksum: None,
                         content: None,
+                        media_type,
                     }];
                 }
             }
@@ -111,6 +128,7 @@ pub fn parse_artifacts_from_text(text: &str) -> Vec<ArtifactMetadata> {
         summary: summarize(text),
         checksum: None,
         content: Some(text.to_string()),
+        media_type: None,
     }]
 }
 
