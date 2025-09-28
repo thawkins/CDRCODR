@@ -30,20 +30,47 @@ pub fn parse_artifacts_from_text(text: &str) -> Vec<ArtifactMetadata> {
             let mut out = Vec::new();
             for (i, it) in arr.iter().enumerate() {
                 if let Some(obj) = it.as_object() {
-                    let path = obj.get("path").and_then(|v| v.as_str()).map(|s| s.to_string()).unwrap_or_else(|| format!("generated/artifact-{}.txt", i + 1));
-                    let content_opt = obj.get("content").and_then(|v| v.as_str()).map(|s| s.to_string());
-                    let summary = content_opt.as_deref().map(summarize).unwrap_or_else(|| obj.get("summary").and_then(|v| v.as_str()).unwrap_or("").to_string());
+                    let path = obj
+                        .get("path")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| format!("generated/artifact-{}.txt", i + 1));
+                    let content_opt = obj
+                        .get("content")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string());
+                    let summary = content_opt.as_deref().map(summarize).unwrap_or_else(|| {
+                        obj.get("summary")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("")
+                            .to_string()
+                    });
                     if let Some(c) = content_opt.clone() {
-                        out.push(ArtifactMetadata { path, summary: summarize(&c), checksum: None, content: Some(c) });
+                        out.push(ArtifactMetadata {
+                            path,
+                            summary: summarize(&c),
+                            checksum: None,
+                            content: Some(c),
+                        });
                         continue;
                     }
                     if !summary.is_empty() {
-                        out.push(ArtifactMetadata { path, summary, checksum: None, content: None });
+                        out.push(ArtifactMetadata {
+                            path,
+                            summary,
+                            checksum: None,
+                            content: None,
+                        });
                         continue;
                     }
                 }
                 // fallback for non-object array items
-                out.push(ArtifactMetadata { path: format!("generated/artifact-{}.json", i + 1), summary: it.to_string().chars().take(120).collect(), checksum: None, content: Some(it.to_string()) });
+                out.push(ArtifactMetadata {
+                    path: format!("generated/artifact-{}.json", i + 1),
+                    summary: it.to_string().chars().take(120).collect(),
+                    checksum: None,
+                    content: Some(it.to_string()),
+                });
             }
             if !out.is_empty() {
                 return out;
@@ -51,17 +78,40 @@ pub fn parse_artifacts_from_text(text: &str) -> Vec<ArtifactMetadata> {
         } else if val.is_object() {
             if let Some(obj) = val.as_object() {
                 if let Some(content) = obj.get("content").and_then(|v| v.as_str()) {
-                    let path = obj.get("path").and_then(|v| v.as_str()).map(|s| s.to_string()).unwrap_or_else(|| "generated/artifact-1.txt".to_string());
-                    return vec![ArtifactMetadata { path, summary: summarize(content), checksum: None, content: Some(content.to_string()) }];
+                    let path = obj
+                        .get("path")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| "generated/artifact-1.txt".to_string());
+                    return vec![ArtifactMetadata {
+                        path,
+                        summary: summarize(content),
+                        checksum: None,
+                        content: Some(content.to_string()),
+                    }];
                 }
                 if let Some(summary) = obj.get("summary").and_then(|v| v.as_str()) {
-                    let path = obj.get("path").and_then(|v| v.as_str()).map(|s| s.to_string()).unwrap_or_else(|| "generated/artifact-1.txt".to_string());
-                    return vec![ArtifactMetadata { path, summary: summary.to_string(), checksum: None, content: None }];
+                    let path = obj
+                        .get("path")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| "generated/artifact-1.txt".to_string());
+                    return vec![ArtifactMetadata {
+                        path,
+                        summary: summary.to_string(),
+                        checksum: None,
+                        content: None,
+                    }];
                 }
             }
         }
     }
-    vec![ArtifactMetadata { path: "generated/artifact-1.txt".to_string(), summary: summarize(text), checksum: None, content: Some(text.to_string()) }]
+    vec![ArtifactMetadata {
+        path: "generated/artifact-1.txt".to_string(),
+        summary: summarize(text),
+        checksum: None,
+        content: Some(text.to_string()),
+    }]
 }
 
 #[async_trait]

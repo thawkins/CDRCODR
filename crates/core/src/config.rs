@@ -9,7 +9,12 @@ pub struct ProjectConfig {
 }
 
 impl ProjectConfig {
-    pub fn from_str(s: &str) -> Result<Self, toml::de::Error> {
+}
+
+impl std::str::FromStr for ProjectConfig {
+    type Err = toml::de::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         toml::from_str(s)
     }
 }

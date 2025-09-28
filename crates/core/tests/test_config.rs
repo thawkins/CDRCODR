@@ -8,7 +8,7 @@ default_backend = "ollama"
 default_model = "gpt-4o-mini"
 "#;
 
-    let cfg = ProjectConfig::from_str(sample).expect("parse should succeed");
+    let cfg = sample.parse::<ProjectConfig>().expect("parse should succeed");
     assert_eq!(cfg.id.unwrap(), "testproject");
     assert_eq!(cfg.default_backend.unwrap(), "ollama");
     assert_eq!(cfg.default_model.unwrap(), "gpt-4o-mini");

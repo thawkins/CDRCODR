@@ -56,6 +56,12 @@ impl LLMAdapter for LLMMockAdapter {
     }
 }
 
+impl Default for MockAdapter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MockAdapter {
     // new() will check MOCK_ADAPTER_RESPONSE env var. If set and points to a file
     // containing a JSON array or object, it will use that as the deterministic response.
@@ -123,7 +129,7 @@ impl Backend for MockAdapter {
                 let arr = seed_val.as_array().unwrap();
                 // if the first element looks like an artifact (has 'path' or 'summary'),
                 // treat the whole array as the artifacts response
-                if let Some(first) = arr.get(0) {
+                if let Some(first) = arr.first() {
                     if first.is_object()
                         && (first.get("path").is_some()
                             || first.get("summary").is_some()

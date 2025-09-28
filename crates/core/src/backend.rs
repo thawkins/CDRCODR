@@ -1,5 +1,5 @@
-use thiserror::Error;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Artifacts {
@@ -15,5 +15,6 @@ pub enum BackendError {
 }
 
 pub trait Backend: Send + Sync {
-    fn generate(&self, prompt: &str, options: serde_json::Value) -> Result<Artifacts, BackendError>;
+    fn generate(&self, prompt: &str, options: serde_json::Value)
+        -> Result<Artifacts, BackendError>;
 }

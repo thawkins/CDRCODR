@@ -16,5 +16,8 @@ fn session_roundtrip_serialization_should_exist() {
 
     let s = sample.to_string();
     let _parsed: Result<cprcodr_core::session::Session, _> = serde_json::from_str(&s);
-    assert!(_parsed.is_ok(), "Session (de)serialization must be implemented");
+    assert!(
+        _parsed.is_ok(),
+        "Session (de)serialization must be implemented"
+    );
 }

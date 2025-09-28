@@ -1,3 +1,15 @@
+## Unreleased
+
+- Add `content: Option<String>` to `ArtifactMetadata` to preserve full artifact
+  contents returned by adapters when available. Update parser, adapters, and
+  CLI mapping to preferentially use `content` (falling back to `summary`).
+  Add parser unit tests.
+
+- Guidance: adapters should populate `content` with the full artifact body
+  (when available) instead of only a short `summary` to enable deterministic
+  patch generation and preview. The CLI will prefer `content` and fall back to
+  `summary` when `content` is None.
+
 # Changelog
 
 ## Unreleased
