@@ -1,50 +1,107 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+SYNC IMPACT REPORT
+Version change: none -> 1.0.0
+Modified principles:
+- template placeholder 1 -> Library-First (Rust crates first)
+- template placeholder 2 -> CLI & Library Boundary
+- template placeholder 3 -> Test-First (TDD) (NON-NEGOTIABLE)
+- template placeholder 4 -> Integration & Contract Testing
+- template placeholder 5 -> Observability, Versioning & Simplicity
+Added sections:
+- Constraints & Requirements
+- Development Workflow
+Removed sections:
+- none
+Templates requiring updates:
+- .specify/templates/plan-template.md ✅ updated
+- .specify/templates/spec-template.md ✅ updated
+- .specify/templates/tasks-template.md ✅ updated
+Follow-up TODOs:
+- RATIFICATION_DATE: TODO(RATIFICATION_DATE): set original adoption date
+-->
+
+# cprcodr Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### Library-First
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Every new capability MUST begin as a well-scoped Rust crate (library) within the workspace
+where practical. Libraries MUST be independently testable, documented, and publishable.
+Binary/CLI projects may depend on crates in the workspace but MUST not contain core logic
+only expressed in binaries. Rationale: crate-first promotes reuse, small public APIs,
+and makes testing and benchmarking straightforward in Rust.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### CLI & Library Boundary
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+Public functionality MUST be exposed via library APIs first and, where a CLI is
+required, a thin binary wrapper MUST be provided that calls into library code.
+Command-line interfaces SHOULD support both human-readable and machine-readable
+outputs (e.g., JSON). Rationale: clear separation of concerns simplifies testing
+and enables programmatic use of the project.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### Test-First (NON-NEGOTIABLE)
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Tests are REQUIRED before significant behavior changes. Feature development
+MUST follow a red-green-refactor cycle: write failing automated tests (unit and
+integration), implement until they pass, then refactor. All code merged to main
+MUST pass the full test suite. Rationale: Rust's strong type system complements
+TDD by catching many classes of error early; TDD ensures regressions are avoided.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### Integration & Contract Testing
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Integration tests and contract tests are REQUIRED for cross-crate boundaries,
+external interfaces, and any IO/serialization formats. Contracts (public types,
+JSON schemas, and CLI protocols) MUST be explicitly documented and have tests
+verifying backward compatibility where applicable. Rationale: prevents silent
+breaks for downstream consumers.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### Observability, Versioning & Simplicity
+
+Structured logging (e.g., JSON or key=value pairs) and explicit error handling
+MUST be used to aid debugging. Versioning MUST follow semantic versioning for
+public crates (MAJOR.MINOR.PATCH). Dependency policy: the project will track and
+adopt the latest stable releases of cargo crates; dependency updates MUST be
+reviewed and CI-verified (see Governance). Keep designs simple: prefer
+composability over cleverness. Rationale: predictable versions and clear
+observability make production usage and debugging feasible.
+
+## Constraints & Requirements
+
+- Language / Tooling: Rust (stable, latest). Use Cargo for packaging and
+  dependency management. Toolchains should be recorded in plans (rust-toolchain).
+- Testing: `cargo test` for unit/integration tests; `cargo bench` (Criterion)
+  for performance benchmarks where needed.
+- Linting & Formatting: `cargo fmt` and `cargo clippy` are REQUIRED in CI.
+- Security: run `cargo audit` in CI; address high/critical advisories before
+  merging releases.
+
+## Development Workflow
+
+- PRs: Every change MUST have a linked issue or feature spec. PRs MUST pass
+  CI (tests, clippy, fmt, audit) before merging. Large changes SHOULD include
+  a migration plan for consumers.
+- Commits: Use conventional, clear messages. Version bumps for public crates
+  MUST follow semver and include a CHANGELOG entry.
+- Releases: Tag releases and publish as needed. For published crates, ensure
+  the Cargo.toml has correct metadata and the public API has compatibility tests.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Amendments: This constitution MAY be amended by a documented proposal (PR)
+that describes the change, migration steps, and tests. A MINOR or MAJOR
+governance change requires review by at least two maintainers and adoption
+documented in the PR. Emergency fixes (security or legal) can be merged with
+maintainer consensus and recorded in the follow-up PR.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Versioning policy: Governance changes follow semantic versioning per the
+Constitution: MAJOR for incompatible governance/principle removals or
+redefinitions; MINOR for added principles or materially expanded guidance;
+PATCH for wording/typo fixes.
+
+Compliance: All PRs MUST include a Constitution Check section (see
+`.specify/templates/plan-template.md`) and document how the change complies
+or provide an explicit justification where a principle is intentionally
+deviated from.
+
+**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: 2025-09-28

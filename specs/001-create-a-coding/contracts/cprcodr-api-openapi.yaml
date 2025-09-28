@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: cprcodr CLI API
+  version: 0.1.0
+paths:
+  /generate:
+    post:
+      summary: Generate code artifacts from a prompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                backend:
+                  type: string
+                model:
+                  type: string
+                options:
+                  type: object
+      responses:
+        '200':
+          description: Generation completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  artifacts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                        type:
+                          type: string
+                        summary:
+                          type: string
+  /session:
+    post:
+      summary: Open an interactive session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_path:
+                  type: string
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string

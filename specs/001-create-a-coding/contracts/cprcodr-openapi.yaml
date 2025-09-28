@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: cprcodr Coding CLI - Contracts
+  version: 0.1.0
+paths:
+  /generate:
+    post:
+      summary: Generate artifacts from prompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                backend:
+                  type: string
+                model:
+                  type: string
+                options:
+                  type: object
+      responses:
+        '200':
+          description: artifacts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  artifacts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                        summary:
+                          type: string
+                        content:
+                          type: string
+  /sessions/{id}:
+    get:
+      summary: Get session metadata
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+components:
+  schemas:
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+        project_id:
+          type: string
+        backend:
+          type: string
+        model:
+          type: string
+        prompts:
+          type: array
+          items:
+            type: object
+            properties:
+              prompt_text:
+                type: string
+              response_summary:
+                type: string
+        artifacts:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+              summary:
+                type: string
