@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Hunk {
     /// 1-based inclusive start line
     pub start: usize,
@@ -18,17 +18,6 @@ pub struct Hunk {
     pub expected_original: Option<String>,
 }
 
-impl Default for Hunk {
-    fn default() -> Self {
-        Hunk {
-            start: 0,
-            end: 0,
-            content: String::new(),
-            expected_original: None,
-        }
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Patch {
     /// path relative to the working tree root
@@ -40,6 +29,12 @@ pub struct Patch {
 #[derive(Debug)]
 pub struct PatchReport {
     pub conflicts: Vec<String>,
+}
+
+impl Default for PatchReport {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PatchReport {
@@ -158,7 +153,7 @@ pub fn apply_patch_to_working_tree(
         // Prepare replacement lines from hunk.content
         let mut repl: Vec<String> = hunk.content.lines().map(|s| format!("{}\n", s)).collect();
         // If content ends with a newline, lines() will omit the final empty; detect and preserve
-        if hunk.content.ends_with('\n') == false && repl.len() > 0 {
+        if !hunk.content.ends_with('\n') && !repl.is_empty() {
             // the original lines() call dropped newline, so adjust last element
             // but to keep simple, do nothing; we already appended \n above
         }

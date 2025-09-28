@@ -21,5 +21,5 @@ fn gen_with_mock_backend_saves_artifacts() {
         .filter_map(|e| e.ok())
         .collect();
     // expect at least one JSON file with -artifacts.json or session file
-    assert!(entries.len() >= 1, "expected files in output dir");
+    assert!(!entries.is_empty(), "expected files in output dir");
 }

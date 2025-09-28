@@ -53,8 +53,7 @@ impl Session {
         let mut p = PathBuf::from(dir);
         fs::create_dir_all(&p)?;
         p.push(format!("{}.json", self.id));
-        let data = serde_json::to_vec(self)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        let data = serde_json::to_vec(self).map_err(std::io::Error::other)?;
         fs::write(p, data)
     }
 

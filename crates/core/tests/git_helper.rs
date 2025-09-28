@@ -12,7 +12,7 @@ fn git_helper_creates_branch_and_commit() {
     // Initialize git repo
     Command::new("git")
         .arg("init")
-        .current_dir(&dir_path)
+        .current_dir(dir_path)
         .assert()
         .success();
 
