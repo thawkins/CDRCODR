@@ -1,0 +1,14 @@
+# Ignore Rust build artifacts
+/target/
+
+# Ignore editor/temp files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore OS files
+.DS_Store
+
+# Ignore cargo package registry index (if any local caches)
+# .cargo/
