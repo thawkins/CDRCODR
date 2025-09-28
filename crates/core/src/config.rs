@@ -8,8 +8,7 @@ pub struct ProjectConfig {
     pub default_model: Option<String>,
 }
 
-impl ProjectConfig {
-}
+impl ProjectConfig {}
 
 impl std::str::FromStr for ProjectConfig {
     type Err = toml::de::Error;
