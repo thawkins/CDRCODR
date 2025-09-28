@@ -10,7 +10,11 @@ fn git_helper_creates_branch_and_commit() {
     let dir_path = dir.path();
 
     // Initialize git repo
-    Command::new("git").arg("init").current_dir(&dir_path).assert().success();
+    Command::new("git")
+        .arg("init")
+        .current_dir(&dir_path)
+        .assert()
+        .success();
 
     // Create a dummy file and commit using the helper (not implemented yet)
     std::fs::write(dir_path.join("README.md"), "hello").unwrap();

@@ -13,7 +13,7 @@ fn patch_model_roundtrip_should_exist() {
     let s = sample.to_string();
 
     // Attempt to deserialize into the expected type (not implemented yet).
-        let _parsed: Result<cprcodr_core::patch::Patch, _> = serde_json::from_str(&s);
+    let _parsed: Result<cprcodr_core::patch::Patch, _> = serde_json::from_str(&s);
     assert!(
         _parsed.is_ok(),
         "Patch model (de)serialisation must be implemented"

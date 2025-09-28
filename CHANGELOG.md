@@ -1,3 +1,10 @@
+## Unreleased
+
+- Add `content: Option<String>` to `ArtifactMetadata` to preserve full artifact
+  contents returned by adapters when available. Update parser, adapters, and
+  CLI mapping to preferentially use `content` (falling back to `summary`).
+  Add parser unit tests.
+
 # Changelog
 
 ## Unreleased

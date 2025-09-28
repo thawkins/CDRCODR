@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 use serde_json::json;
 
 use cprcodr_core::adapters::MockAdapter;
-use cprcodr_core::adapters::{LMStudioAdapter, OllamaAdapter, LLMAdapter};
+use cprcodr_core::adapters::{LLMAdapter, LMStudioAdapter, OllamaAdapter};
 use cprcodr_core::session::Session;
 use cprcodr_core::Backend;
 use std::fs;
@@ -117,16 +117,16 @@ fn main() {
         }
         Some(Commands::Gen {
             prompt,
-                backend,
-                adapter,
-                url,
-                adapter_url,
-                adapter_api_key,
-                model,
-                timeout,
-                output,
-                dry_run,
-            }) => {
+            backend,
+            adapter,
+            url,
+            adapter_url,
+            adapter_api_key,
+            model,
+            timeout,
+            output,
+            dry_run,
+        }) => {
             let options = json!({
                 "model": model.clone().unwrap_or_default(),
                 "timeout": timeout.unwrap_or(0),
@@ -142,7 +142,13 @@ fn main() {
                         let a = cprcodr_core::adapters::LLMMockAdapter::new("mock:");
                         // run tokio runtime to call async adapter and map to artifacts
                         let rt = tokio::runtime::Runtime::new().unwrap();
-                        let resp = rt.block_on(async { a.call(cprcodr_core::adapters::trait_adapter::LLMRequest { prompt: prompt.clone(), max_tokens: None }).await });
+                        let resp = rt.block_on(async {
+                            a.call(cprcodr_core::adapters::trait_adapter::LLMRequest {
+                                prompt: prompt.clone(),
+                                max_tokens: None,
+                            })
+                            .await
+                        });
                         match resp {
                             Ok(arts) => {
                                 let vals: Vec<serde_json::Value> = arts.into_iter().map(|m| serde_json::json!({"path": m.path, "summary": m.summary, "content": m.content.unwrap_or(m.summary)})).collect();
@@ -153,9 +159,18 @@ fn main() {
                     }
                     "ollama" => {
                         let url = adapter_url.clone().unwrap_or_else(|| url.clone());
-                        let a = cprcodr_core::adapters::OllamaAdapter::new(url, adapter_api_key.clone());
+                        let a = cprcodr_core::adapters::OllamaAdapter::new(
+                            url,
+                            adapter_api_key.clone(),
+                        );
                         let rt = tokio::runtime::Runtime::new().unwrap();
-                        let resp = rt.block_on(async { a.call(cprcodr_core::adapters::trait_adapter::LLMRequest { prompt: prompt.clone(), max_tokens: None }).await });
+                        let resp = rt.block_on(async {
+                            a.call(cprcodr_core::adapters::trait_adapter::LLMRequest {
+                                prompt: prompt.clone(),
+                                max_tokens: None,
+                            })
+                            .await
+                        });
                         match resp {
                             Ok(arts) => {
                                 let vals: Vec<serde_json::Value> = arts.into_iter().map(|m| serde_json::json!({"path": m.path, "summary": m.summary, "content": m.content.unwrap_or(m.summary)})).collect();
@@ -166,9 +181,18 @@ fn main() {
                     }
                     "lmstudio" => {
                         let url = adapter_url.clone().unwrap_or_else(|| url.clone());
-                        let a = cprcodr_core::adapters::LMStudioAdapter::new(url, adapter_api_key.clone());
+                        let a = cprcodr_core::adapters::LMStudioAdapter::new(
+                            url,
+                            adapter_api_key.clone(),
+                        );
                         let rt = tokio::runtime::Runtime::new().unwrap();
-                        let resp = rt.block_on(async { a.call(cprcodr_core::adapters::trait_adapter::LLMRequest { prompt: prompt.clone(), max_tokens: None }).await });
+                        let resp = rt.block_on(async {
+                            a.call(cprcodr_core::adapters::trait_adapter::LLMRequest {
+                                prompt: prompt.clone(),
+                                max_tokens: None,
+                            })
+                            .await
+                        });
                         match resp {
                             Ok(arts) => {
                                 let vals: Vec<serde_json::Value> = arts.into_iter().map(|m| serde_json::json!({"path": m.path, "summary": m.summary, "content": m.content.unwrap_or(m.summary)})).collect();

@@ -15,4 +15,3 @@ impl fmt::Display for ArtifactMetadata {
         write!(f, "{} ({})", self.path, self.summary)
     }
 }
-
